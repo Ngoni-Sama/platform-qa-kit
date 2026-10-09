@@ -1,46 +1,62 @@
 # Platform QA kit for Claude
 
-Get Claude to test your web platform end to end: every page, every AI agent, with a video per section and a findings report at the end. Claude only looks around. It won't change, send or delete anything unless you approve that specific action.
+Have Claude test a live web platform end to end and hand you a **walkthrough report**: every page and AI agent checked, a short video per section, ranked findings and concrete **suggested fixes**.
 
-**Videos show only the browser.** They're built from screenshots of Claude's browser tab, so your other apps, your other Claude sessions and the chat never appear in them. You can keep using your PC, or minimize Claude, while it runs.
-
-## What you need
-- **The Claude desktop app** (Windows), using the **Code** tab. It has a built-in browser that Claude drives.
-- **FFmpeg**, to turn the screenshots into videos. In PowerShell:
-  ```
-  winget install Gyan.FFmpeg
-  ```
-  Open a new terminal afterwards so `ffmpeg` is on your PATH. Or download a build from https://www.gyan.dev/ffmpeg/builds/ and unzip it to `C:\Tools\ffmpeg`.
-
-## Install (one time)
-In PowerShell:
-```
-git clone https://github.com/Ngoni-Sama/platform-qa-kit.git "$env:TEMP\platform-qa-kit"
-Copy-Item "$env:TEMP\platform-qa-kit\platform-qa" "$env:USERPROFILE\.claude\skills\platform-qa" -Recurse
-```
-Or download the repo as a ZIP from GitHub and copy its `platform-qa` folder into `%USERPROFILE%\.claude\skills\`.
-You should end up with `%USERPROFILE%\.claude\skills\platform-qa\SKILL.md`. Restart the Claude app (or start a new session) so it picks up the skill.
-
-To update later, run `git -C "$env:TEMP\platform-qa-kit" pull` and copy the folder again (replace the old one).
-
-## Run a test
-1. In the Claude desktop app's Code tab, start a new session and type:
-   ```
-   /platform-qa https://your-platform.example.com
-   ```
-   You can also just say "test and record my platform at …".
-2. Claude opens your site in its built-in browser. **You sign in yourself** there (Ctrl+Shift+B shows the browser). Never give Claude your password, because it won't type it anyway. Tick "Remember me" if the site has it.
-3. Claude lists every test it plans to run and waits for your OK. Tests that send prompts to AI agents use some credits and leave conversations marked `[QA TEST]`.
-4. Let it run. You can use other apps meanwhile.
+- **Read-only.** Claude looks around and won't change, send, buy or delete anything unless you approve that exact action. Test prompts to AI agents are marked `[QA TEST]`.
+- **You sign in yourself.** Claude never types your password.
+- **Videos show only the browser.** They're built from screenshots (or GIF recordings) of the browser tab, so your other apps, chats and Claude sessions never appear in them.
 
 ## What you get
-`Videos\qa-<site>\` contains:
-- one MP4 per section (dashboard, account pages, each agent, and so on), showing the browser step by step, about 3 seconds per step
-- `report.html`: a walkthrough in a clean Apple-font, neumorphic design (light and dark). It opens with section tiles and a Now / Next / Later **fix plan**. Each section then shows the steps with pass/fail, the video playing inline, the findings, a **Suggested fixes** panel (effort + owner + how) and, where useful, a diagram (sign-in flow, where a request fails, which agents remember context). It ends with all findings ranked Broken / High / Medium / Low and exactly what the test created.
+`Videos/qa-<site>/` (or your Cowork folder) containing:
+- `report.html`: a clean Apple-font, neumorphic report (light and dark) with section tiles, a Now / Next / Later fix plan, and per section the steps with PASS / FAIL, the click-to-play video, the findings, a **Suggested fixes** panel (effort, owner, how) and diagrams where useful.
+- `videos/`: one web-ready MP4 per section plus poster images.
 
-## Good to know
-- Sign-ins in Claude's browser are separate from your Chrome or Edge.
-- Claude won't reload pages until it has tested that reloading keeps you signed in. Some apps sign you out on reload.
-- Agents that can act (email, chat, Git) are told not to use any tools. Agents over personal data are asked for non-identifying fields only. The videos still show whatever your platform displays, so check them before sharing outside your team.
-- **Live video (optional, private use only):** `scripts/rec.ps1` can film the Claude window in real time, but it captures everything in that window: sidebar, chat and other sessions. Claude only uses it if you ask, and never for the shared report.
-- **Mac:** testing, screenshot videos and the report work the same if PowerShell (`pwsh`) and FFmpeg are installed. `rec.ps1` is Windows-only.
+## Install — pick one
+
+### 1. Claude app: chat, Cowork, and Claude Code (signed in)
+1. Download **[`dist/platform-qa.zip`](dist/platform-qa.zip)** from this repo.
+2. In the Claude app, go to **Settings → Capabilities** and turn on **Code execution and file creation**.
+3. Go to **Customize → Skills**, click **+ → Create skill → Upload a skill**, and choose the ZIP.
+
+The skill then shows up in chat and Cowork; type `/` to pick it. Claude Code also loads it automatically when you're signed in with the same Claude account (Claude Code v2.1.273 or newer; check with `/skills`).
+On Team or Enterprise, an owner may need to allow user-created skills.
+
+### 2. Claude Code plugin
+In Claude Code:
+```
+/plugin marketplace add Ngoni-Sama/platform-qa-kit
+/plugin install platform-qa@platform-qa-kit
+```
+Update later with `/plugin marketplace update platform-qa-kit`.
+
+### 3. Manual copy (Claude Code)
+```
+git clone https://github.com/Ngoni-Sama/platform-qa-kit.git
+```
+Copy `plugins/platform-qa/skills/platform-qa` to `~/.claude/skills/platform-qa` (Windows: `%USERPROFILE%\.claude\skills\platform-qa`).
+
+## Which browser it uses
+| Where you run it | Browser Claude drives | Videos |
+|---|---|---|
+| **Claude desktop app → Code tab** | The built-in browser panel (separate sign-ins; show it with Ctrl+Shift+B / ⌘⇧B) | MP4s from screenshots |
+| **Cowork**, **Claude in Chrome**, Claude Code with Chrome | Your real Chrome via the Claude in Chrome extension (uses your Chrome sign-ins; works in a new tab) | GIF recordings, converted to MP4 when Python is available |
+
+If neither browser is available, Claude asks you to enable Claude in Chrome.
+
+## Requirements for videos
+- **Python 3** and **ffmpeg**: `winget install Gyan.FFmpeg` (Windows), `brew install ffmpeg` (Mac), `apt install ffmpeg` (Linux), or just `pip install imageio-ffmpeg`.
+- Without a shell (for example the Chrome extension on its own), Claude puts screenshots or GIFs straight into the report instead.
+
+## Run a test
+1. Type `/platform-qa https://your-platform.example.com`, or just ask: "test and record my platform at …".
+2. Sign in when Claude asks, using email and password (SSO buttons often pick the wrong account), and tick **Remember me**.
+3. Approve the test plan. Claude lists read-only checks separately from tests that send prompts to AI agents, since those use credits.
+4. Let it run. You can keep using your computer.
+
+## Sharing results
+Reports usually show real people's data (staff emails, customer names), so keep them private. The skill checks a GitHub repo is private before pushing, asks which git identity to use, and warns that free web hosting such as Vercel is public. See [`references/publishing.md`](plugins/platform-qa/skills/platform-qa/references/publishing.md).
+
+## For maintainers
+- Skill source: `plugins/platform-qa/skills/platform-qa/`. Read `SKILL.md` first; `references/pitfalls.md` lists every problem real runs hit and its fix.
+- After editing, rebuild the upload ZIP with `python build_zip.py` and commit `dist/platform-qa.zip`.
+- Check the manifests with `claude plugin validate .` (repo root) and `claude plugin validate plugins/platform-qa`.

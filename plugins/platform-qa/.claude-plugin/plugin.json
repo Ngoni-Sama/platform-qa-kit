@@ -1,0 +1,9 @@
+{
+  "name": "platform-qa",
+  "version": "1.0.0",
+  "description": "Recorded end-to-end QA of live web platforms: read-only page checks, API/console errors, AI agent answer and memory tests, browser-only videos, and a walkthrough report with suggested fixes.",
+  "author": { "name": "Ngoni-Sama", "url": "https://github.com/Ngoni-Sama" },
+  "homepage": "https://github.com/Ngoni-Sama/platform-qa-kit",
+  "repository": "https://github.com/Ngoni-Sama/platform-qa-kit",
+  "keywords": ["qa", "testing", "browser", "report", "ai-agents"]
+}

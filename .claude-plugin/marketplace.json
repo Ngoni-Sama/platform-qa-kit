@@ -1,0 +1,18 @@
+{
+  "name": "platform-qa-kit",
+  "owner": { "name": "Ngoni-Sama", "url": "https://github.com/Ngoni-Sama" },
+  "metadata": {
+    "description": "Claude skills for recorded end-to-end QA of web platforms.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "platform-qa",
+      "source": "./plugins/platform-qa",
+      "description": "Recorded end-to-end QA of live web platforms with browser-only videos and a walkthrough report with suggested fixes.",
+      "version": "1.0.0",
+      "author": { "name": "Ngoni-Sama" },
+      "category": "testing"
+    }
+  ]
+}

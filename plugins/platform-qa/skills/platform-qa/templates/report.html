@@ -15,7 +15,7 @@
   Replace every {{PLACEHOLDER}}; copy the example blocks as often as needed; delete unused.
   Step pills: res pass | fail | warn (ISSUE) | info (EVIDENCE).
   Finding classes: crit (BROKEN) | high | med | low | fix (CORRECTED).
-  Video paths are relative: keep this file next to the videos (or adjust "videos/"). Videos are click-to-play: preload="none" plus a poster from videos/posters/ (make-videos.ps1 writes them). Keep videos as normal git files, not Git LFS (Vercel and other hosts serve LFS placeholders).
+  Video paths are relative: keep this file next to the videos (or adjust "videos/"). Videos are click-to-play: preload="none" plus a poster from videos/posters/ (scripts/make_videos.py writes them). For a GIF section use <img src="videos/NN-x.gif" alt="..."> instead. Keep videos as normal git files, not Git LFS (Vercel and other hosts serve LFS placeholders).
   Mermaid: put diagram source inside <pre class="mermaid">; quote labels with special
   characters, e.g. A["Sign-in & session"]. Use diagrams for flows (sign-in, request →
   failure), relationships (roles vs limits) and result groupings (pass/fail buckets).
