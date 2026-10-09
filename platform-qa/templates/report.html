@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{PLATFORM}} QA Report</title>
+<!--
+  Template for the platform-qa skill. Replace every {{PLACEHOLDER}}, duplicate the
+  example blocks as needed, and delete the ones you don't use. Video links are
+  relative: keep this file in the same folder as the recordings.
+  Severity classes: crit (broken) / high / med / low / fix (corrected) / pass.
+-->
+<style>
+  :root {
+    --bg: #f7f7fb; --surface: #ffffff; --text: #1b1b24; --muted: #5d5d70; --line: #e3e3ec;
+    --crit: #c62828; --crit-bg: #fdecec; --high: #b45309; --high-bg: #fff4e5;
+    --med: #6d28d9; --med-bg: #f1ebff; --low: #475569; --low-bg: #eef2f6;
+    --pass: #15803d; --pass-bg: #e8f6ec; --accent: #5b4bdb; --fix: #0e7490; --fix-bg: #e0f4f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121218; --surface: #1c1c25; --text: #ececf3; --muted: #a1a1b5; --line: #2e2e3b;
+      --crit: #ff8a80; --crit-bg: #3a1c1c; --high: #ffb74d; --high-bg: #3a2a14;
+      --med: #c4b5fd; --med-bg: #2a2140; --low: #b0bec5; --low-bg: #232a31;
+      --pass: #81c784; --pass-bg: #1b2e20; --accent: #a29bfe; --fix: #67e8f9; --fix-bg: #133038;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121218; --surface: #1c1c25; --text: #ececf3; --muted: #a1a1b5; --line: #2e2e3b;
+    --crit: #ff8a80; --crit-bg: #3a1c1c; --high: #ffb74d; --high-bg: #3a2a14;
+    --med: #c4b5fd; --med-bg: #2a2140; --low: #b0bec5; --low-bg: #232a31;
+    --pass: #81c784; --pass-bg: #1b2e20; --accent: #a29bfe; --fix: #67e8f9; --fix-bg: #133038;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 36px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .stat b { display: block; font-size: 24px; }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .f { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px;
+    border-radius: 8px; padding: 12px 14px; margin: 10px 0; }
+  .f h3 { margin: 0 0 4px; font-size: 15.5px; }
+  .f p { margin: 4px 0 0; color: var(--muted); }
+  .f.crit { border-left-color: var(--crit); } .f.high { border-left-color: var(--high); }
+  .f.med { border-left-color: var(--med); } .f.low { border-left-color: var(--low); }
+  .f.fix { border-left-color: var(--fix); }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .03em;
+    padding: 1px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; }
+  .tag.crit { color: var(--crit); background: var(--crit-bg); }
+  .tag.high { color: var(--high); background: var(--high-bg); }
+  .tag.med { color: var(--med); background: var(--med-bg); }
+  .tag.low { color: var(--low); background: var(--low-bg); }
+  .tag.pass { color: var(--pass); background: var(--pass-bg); }
+  .tag.fix { color: var(--fix); background: var(--fix-bg); }
+  .wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .03em; }
+  tr:last-child td { border-bottom: 0; }
+  a { color: var(--accent); }
+  code { font-size: 13px; background: var(--low-bg); padding: 1px 5px; border-radius: 4px; }
+  ul.plain { padding-left: 20px; margin: 6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{PLATFORM}} — QA run</h1>
+  <p class="sub">{{URL}} · {{DATE}}, {{START}}–{{END}} · account {{ACCOUNT}} · read-only, plus one test prompt and one follow-up per agent (all prefixed <code>[QA TEST]</code>)</p>
+
+  <div class="stats">
+    <div class="stat"><b>{{N}}</b><span>broken / blocking</span></div>
+    <div class="stat"><b>{{N}}</b><span>AI answer-quality issues</span></div>
+    <div class="stat"><b>{{N}}</b><span>data mismatches</span></div>
+    <div class="stat"><b>{{N}}</b><span>UX, performance, polish</span></div>
+    <div class="stat"><b>{{X}} / {{Y}}</b><span>pages, agents and models working</span></div>
+  </div>
+
+  <h2>Broken or blocking</h2>
+  <div class="f crit"><h3><span class="tag crit">BROKEN</span>{{One-line statement of what doesn't work}}</h3>
+    <p>{{Evidence: what you did, what happened, API status codes, since when. Video NN.}}</p></div>
+
+  <h2>AI answer quality</h2>
+  <div class="f high"><h3><span class="tag high">HIGH</span>{{e.g. Agent X does not remember earlier messages}}</h3>
+    <p>{{Prompt, expected answer, actual answer, sources. Video NN.}}</p></div>
+
+  <h2>Data mismatches</h2>
+  <div class="f med"><h3><span class="tag med">MEDIUM</span>{{e.g. Plan shown as A on page 1, B on page 2}}</h3></div>
+
+  <h2>UX, performance and polish</h2>
+  <div class="f low"><h3><span class="tag low">LOW</span>{{e.g. Duplicate API calls: /api/x called 6× per load}}</h3></div>
+
+  <h2>Agent and model results</h2>
+  <div class="wrap"><table>
+    <tr><th>Agent / model</th><th>First answer</th><th>Time</th><th>Memory</th><th>Notes</th><th>Video</th></tr>
+    <tr><td>{{Agent}}</td><td><span class="tag pass">PASS</span></td><td>~{{s}} s</td><td><span class="tag crit">FAIL</span></td><td>{{note}}</td><td><a href="{{file}}.mp4">{{NN}}</a></td></tr>
+  </table></div>
+
+  <h2>What passed</h2>
+  <ul class="plain">
+    <li>{{Pages and flows that loaded with all API calls returning 200}}</li>
+  </ul>
+
+  <h2>Recordings</h2>
+  <ul class="plain">
+    <li><a href="{{file}}.mp4">{{NN}} {{Section name}}</a></li>
+  </ul>
+
+  <h2>Test footprint</h2>
+  <p>{{What the run created (conversations, messages), credits used, and what was deliberately not touched: invites, uploads, settings, payments, deletes.}}</p>
+</main>
+</body>
+</html>
