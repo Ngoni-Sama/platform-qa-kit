@@ -10,6 +10,7 @@ Have Claude test a live web platform end to end and hand you a **walkthrough rep
 `Videos/qa-<site>/` (or your Cowork folder) containing:
 - `report.html`: a clean Apple-font, neumorphic report (light and dark) with section tiles, a Now / Next / Later fix plan, and per section the steps with PASS / FAIL, the click-to-play video, the findings, a **Suggested fixes** panel (effort, owner, how) and diagrams where useful.
 - `videos/`: one web-ready MP4 per section plus poster images.
+- `index.html`: opens the report, so you can upload the folder as-is to any static host (Vercel, Netlify, Cloudflare Pages, GitHub Pages).
 
 ## Install — pick one
 

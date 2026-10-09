@@ -12,10 +12,10 @@ Only do this when the user asks, and confirm each outward-facing step.
 - Rewriting authors on already-pushed commits needs a force-push — ask first. A force-push doesn't delete files already uploaded to GitHub's Git LFS storage; only deleting the repo does.
 
 ## Repo layout
-- `report.html`, `videos/*.mp4`, `videos/posters/*.jpg`, a `README.md` (top issues, how to view, confidentiality note).
+- `index.html`, `report.html`, `videos/*.mp4`, `videos/posters/*.jpg`, a `README.md` (top issues, how to view, confidentiality note).
 - **Commit videos as normal files, not Git LFS** (see pitfalls.md).
 
 ## Hosting
-- **Vercel (Hobby/free):** deployments are **public** to anyone with the link; password protection is a paid feature. A private repo only deploys when the **commit author is the Vercel account owner** — otherwise "Deployment Blocked … did not have contributing access". Fix the commit identity, not the plan. Add an `index.html` that forwards to `report.html` (otherwise a 404), and a `vercel.json` `X-Robots-Tag: noindex` header plus `robots.txt` `Disallow: /`.
+- **Vercel (Hobby/free):** deployments are **public** to anyone with the link; password protection is a paid feature. A private repo only deploys when the **commit author is the Vercel account owner** — otherwise "Deployment Blocked … did not have contributing access". Fix the commit identity, not the plan. Make sure the folder's `index.html` (from the template) is committed, or the site root is a 404. Add a `vercel.json` `X-Robots-Tag: noindex` header plus `robots.txt` `Disallow: /`.
 - **Private web hosting:** Cloudflare Pages + Cloudflare Access (free tier) can restrict the site to the company's email domain.
 - **Simplest private option:** the private GitHub repo itself — collaborators clone it and open `report.html`.

@@ -29,7 +29,7 @@ Before running, read **references/pitfalls.md** (problems real runs hit, and the
 
 **Shell** (Bash/PowerShell/Python): needed for `scripts/make_videos.py` (Python 3 + ffmpeg, or `pip install imageio-ffmpeg`). No shell → skip video files, put key screenshots or GIFs straight into the report.
 
-**Output folder:** `~/Videos/qa-<site>/` (Windows `%USERPROFILE%\Videos\qa-<site>\`), or the folder the user/Cowork workspace gives. Videos go in `videos/`, the report at the top.
+**Output folder:** `~/Videos/qa-<site>/` (Windows `%USERPROFILE%\Videos\qa-<site>\`), or the folder the user/Cowork workspace gives. Layout: `index.html` + `report.html` at the top, videos in `videos/`, posters in `videos/posters/` — ready to open locally or upload to any static host as-is.
 
 ## Step 1 — Set up and sign in
 1. Open the site in a new tab. Read pages with `get_page_text`/`read_page`, not by guessing from screenshots.
@@ -62,7 +62,7 @@ For each section (dashboard, account pages, each agent, …):
 - Output is web-ready (faststart, keyframe every second) with a poster per video. Spot-check one frame per video before linking it.
 
 ## Step 5 — Report
-Copy `templates/report.html` next to `videos/` and fill it in following **references/report-guide.md**: section tiles + Fix plan at the top, then per section *goal → diagram (optional) → steps with PASS/FAIL/ISSUE → inline click-to-play video → findings → Suggested fixes*, then all findings ranked and the test footprint. Verify it renders (serve the folder, check every video loads and every diagram drew), then send it to the user and say which videos show personal data.
+Copy `templates/report.html` and `templates/index.html` next to `videos/` (replace `{{PLATFORM}}` in both; `index.html` opens the report when the folder is served as a website) and fill in the report following **references/report-guide.md**: section tiles + Fix plan at the top, then per section *goal → diagram (optional) → steps with PASS/FAIL/ISSUE → inline click-to-play video → findings → Suggested fixes*, then all findings ranked and the test footprint. Verify it renders (serve the folder, check every video loads and every diagram drew), then send it to the user and say which videos show personal data.
 
 ## Step 6 — Share (only when asked)
 Follow **references/publishing.md**: check repo visibility first, ask which git identity to use, commit videos as normal files (not Git LFS), add an `index.html`, keep sites `noindex`, and remember free hosting is public.
