@@ -1,6 +1,6 @@
 ---
 name: platform-qa
-description: Full recorded QA test of a live web platform (dashboard, SaaS app, AI-agent portal) in Claude's built-in browser — read-only page checks, API/console error capture, AI agent prompt + memory tests, screen recordings of the Claude window, and an HTML findings report with linked videos. Use when the user asks to "test my site/platform", "QA the dashboard", "check if the agents work", or "record tests".
+description: Full recorded QA test of a live web platform (dashboard, SaaS app, AI-agent portal) in Claude's built-in browser — read-only page checks, API/console error capture, AI agent prompt + memory tests, browser-only videos per section, and an HTML findings report with linked videos. Use when the user asks to "test my site/platform", "QA the dashboard", "check if the agents work", or "record tests".
 ---
 
 # Platform QA — recorded end-to-end testing
@@ -15,11 +15,12 @@ You test a live platform the way a careful QA engineer would. You produce **evid
 4. **Mark everything you create.** Start every prompt with `[QA TEST]` so it is easy to find later. Don't delete anything you created.
 5. **Ask agents safe questions.** For agents that can act (email, chat, Git, CRM tools), say "Do NOT call any tools or send anything" in the prompt. For agents over personal data (CVs, patients, customers), ask for non-identifying fields only, and never repeat names you see in the report.
 6. **Never reload the page or type a URL** on single-page apps until you have tested that reloading keeps the session. Many apps lose their session on a full reload. Navigate by clicking, or with the app's own client-side router (see Navigation).
+7. **Videos show only the browser.** Build them from your own browser screenshots (`section.ps1` + `make-videos.ps1`). Never record the screen or the Claude window by default. Window recordings capture the tester's other Claude sessions, chat, sidebar and anything else on screen, which they can't share with colleagues.
 
 ## Workflow
 
 ### 1. Set up
-- Check that the recorder works: `scripts/rec.ps1 start smoke -Folder qa-<site> -Window claude`, wait 3 s, `stop`, check the MP4 is larger than about 100 KB, then delete it.
+- Pick the output folder name `qa-<site>`. Videos and the report go to `%USERPROFILE%\Videos\qa-<site>\`.
 - Open the site with `preview_start {url}`. Read the page with `get_page_text`, never by guessing from screenshots.
 - Ask the user to sign in, then confirm by reading the page (greeting, user name, dashboard text).
 
@@ -28,12 +29,12 @@ You test a live platform the way a careful QA engineer would. You produce **evid
 - Group the links: dashboard, data pages, settings and admin, billing, AI agents and models, integrations.
 - If the codebase is available locally, check the API routes too. Features with an API but no page are a finding.
 
-### 3. Run the tests: one recording per section
-For each section: `rec.ps1 stop` the previous recording, then `rec.ps1 start NN-section-name -Folder qa-<site> -Window claude`.
+### 3. Run the tests: one video per section
+At the start of each section run `scripts/section.ps1 <section-name> -Folder qa-<site>` (e.g. `dashboard`, `account-pages`, `agent-caselaw`). Every browser screenshot you take afterwards becomes a frame of that section's video, so **take a screenshot at every meaningful step**: page loaded, menu open, prompt sent, answer arriving, answer finished, error shown.
 
 For **every page**:
 - Before navigating, clear the timings: `performance.clearResourceTimings()`.
-- Navigate, wait 4–6 s, then capture `get_page_text` and a screenshot (scale 0.6).
+- Navigate, wait 4–6 s, then capture `get_page_text` and a screenshot (scale 0.6). The screenshot is the video frame.
 - Read the API results: `performance.getEntriesByType('resource').filter(e => /\/api\//.test(e.name)).map(e => e.responseStatus + ' ' + Math.round(e.duration) + 'ms ' + e.name)`.
 - Check console errors (`read_console_messages onlyErrors`). CSP violations that block analytics are a real finding.
 - Look for:
@@ -58,9 +59,9 @@ For **every AI agent or model**:
 - Reload test, done **last**: does a full reload keep the session?
 
 ### 4. Report
-- Copy `templates/report.html` to the recordings folder and fill it in. Rank findings: **Broken** (feature doesn't work), **High** (wrong or unsafe AI output, privacy), **Medium** (data mismatches, admin risks), **Low** (polish). Each finding gets one sentence of evidence and a video number.
+- Build the videos: `scripts/make-videos.ps1 -ShotsDir <dir> -Folder qa-<site>`. The screenshot directory is the folder in each screenshot result's "source:" path. Spot-check a frame from each video before linking it.
+- Copy `templates/report.html` to the videos folder and fill it in. Rank findings: **Broken** (feature doesn't work), **High** (wrong or unsafe AI output, privacy), **Medium** (data mismatches, admin risks), **Low** (polish). Each finding gets one sentence of evidence and a video number.
 - Add an agent results table (first answer, time, memory, notes, video), a "what passed" list, links to the recordings, and the test footprint (what was created, credits used, what was deliberately not touched).
-- If any recording is empty (under 100 KB), the Claude window was minimized. Run `scripts/slideshows.ps1 -Folder qa-<site> -ShotsDir <dir>` to rebuild it from screenshots. The screenshot directory is the folder in each screenshot result's "source:" path.
 - Send the report with `SendUserFile`. If any recording shows personal data, warn the user before they share it.
 
 ## Navigation tips
@@ -68,6 +69,7 @@ For **every AI agent or model**:
 - Element refs from `find` can point at hidden duplicates. If a click doesn't focus the right element, compute coordinates from `getBoundingClientRect()` × (screenshot frame width ÷ `innerWidth`).
 - Long waits inside one `javascript_tool` call time out after about 45 s. Split them.
 
-## Recording tips
-- `-Window claude` uses Windows Graphics Capture: it keeps recording when other windows cover Claude, but **not when Claude is minimized**. Tell the user before starting: "Use other apps on top, but don't minimize Claude, and keep the browser panel open."
-- Leave the browser panel at its default size. Emulating a large viewport makes the recording tiny.
+## Video tips
+- Screenshot-built videos work even when the Claude window is hidden or minimized, and the user can keep using their PC. They show about 3 s per step rather than smooth motion.
+- Leave the browser panel at its default size. Emulating a large viewport makes the frames tiny.
+- **Live window recording (opt-in only):** `scripts/rec.ps1` records the Claude window in real time. Use it only if the user asks for live video **for their own private use**, and warn them first that it captures their sidebar, the chat and any other Claude session they open. Never put window recordings in a shared report. It also produces an empty file while Claude is minimized.

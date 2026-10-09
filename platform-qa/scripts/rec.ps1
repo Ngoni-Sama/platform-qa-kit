@@ -1,3 +1,7 @@
+# OPTIONAL live recorder - NOT for videos you share. It films the whole Claude window
+# (sidebar, chat, other sessions) or the whole desktop. For shareable, browser-only
+# videos use section.ps1 + make-videos.ps1 instead.
+#
 # Screen recorder for QA test runs (Windows, needs FFmpeg 8 or newer for window capture).
 #   rec.ps1 start <test-name> [-Folder <name>] [-Window <exe>]   begin recording
 #   rec.ps1 stop [-Folder <name>]                                end the current recording
