@@ -15,7 +15,7 @@
   Replace every {{PLACEHOLDER}}; copy the example blocks as often as needed; delete unused.
   Step pills: res pass | fail | warn (ISSUE) | info (EVIDENCE).
   Finding classes: crit (BROKEN) | high | med | low | fix (CORRECTED).
-  Video paths are relative: keep this file next to the videos (or adjust "videos/").
+  Video paths are relative: keep this file next to the videos (or adjust "videos/"). Videos are click-to-play: preload="none" plus a poster from videos/posters/ (make-videos.ps1 writes them). Keep videos as normal git files, not Git LFS (Vercel and other hosts serve LFS placeholders).
   Mermaid: put diagram source inside <pre class="mermaid">; quote labels with special
   characters, e.g. A["Sign-in & session"]. Use diagrams for flows (sign-in, request →
   failure), relationships (roles vs limits) and result groupings (pass/fail buckets).
@@ -99,7 +99,7 @@
   .step-note { display: block; color: var(--muted); font-size: 13.5px; margin-top: 3px; }
   /* Video */
   figure.vid { margin: 22px 0 10px; padding: 12px; }
-  figure.vid video { width: 100%; max-height: 560px; background: #0d0f14; border-radius: 14px; display: block; box-shadow: var(--inset-sm); }
+  figure.vid video { width: 100%; max-height: 560px; aspect-ratio: 800 / 836; object-fit: contain; background: #0d0f14; border-radius: 14px; display: block; box-shadow: var(--inset-sm); cursor: pointer; }
   figure.vid figcaption { color: var(--muted); font-size: 13px; margin: 10px 4px 2px; }
   .vids { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
   .vids figure.vid { margin: 22px 0 10px; }
@@ -227,7 +227,7 @@ sequenceDiagram
   <li><span>{{What was done}}<span class="step-note">{{Detail}}</span></span><span class="res warn">ISSUE</span></li>
 </ol>
 
-<figure class="vid"><video controls preload="metadata" playsinline src="videos/{{NN-section}}.mp4"></video><figcaption>Video {{NN}} — {{what it shows}}</figcaption></figure>
+<figure class="vid"><video controls preload="none" playsinline poster="videos/posters/{{NN-section}}.jpg" src="videos/{{NN-section}}.mp4"></video><figcaption>Video {{NN}} — {{what it shows}}</figcaption></figure>
 
 <h4>Findings</h4>
 <div class="f crit"><b class="t"><span class="tag crit">BROKEN</span>{{One-line finding}}</b><p>{{One sentence of evidence or impact}}</p></div>
@@ -244,7 +244,7 @@ sequenceDiagram
   <li><span>First prompt …<span class="step-note">~20 s; answer; sources</span></span><span class="res pass">PASS</span></li>
   <li><span>Follow-up memory test …<span class="step-note">what it said</span></span><span class="res fail">FAIL</span></li>
 </ol>
-<figure class="vid"><video controls preload="metadata" playsinline src="videos/NN-agent.mp4"></video><figcaption>Video NN — …</figcaption></figure>
+<figure class="vid"><video controls preload="none" playsinline poster="videos/posters/NN-agent.jpg" src="videos/NN-agent.mp4"></video><figcaption>Video NN — …</figcaption></figure>
 -->
 
 <hr>
@@ -259,6 +259,20 @@ sequenceDiagram
 <p class="sub">{{Which videos show personal data, if any. Keep internal.}}</p>
 
 </main>
+<script>
+  // Videos load only when played (preload="none" + poster). Clicking anywhere on a video
+  // toggles play/pause, and starting one pauses the others.
+  document.querySelectorAll('figure.vid video').forEach(v => {
+    v.addEventListener('click', e => {
+      if (e.offsetY > v.clientHeight - 48) return; // leave the control bar alone
+      e.preventDefault();
+      v.paused ? v.play() : v.pause();
+    });
+    v.addEventListener('play', () => {
+      document.querySelectorAll('figure.vid video').forEach(o => { if (o !== v && !o.paused) o.pause(); });
+    });
+  });
+</script>
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
   const dark = document.documentElement.dataset.theme === 'dark' ||

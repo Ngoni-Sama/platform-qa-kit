@@ -60,7 +60,7 @@ For **every AI agent or model**:
 
 ### 4. Report
 - Build the videos: `scripts/make-videos.ps1 -ShotsDir <dir> -Folder qa-<site>`. The screenshot directory is the folder in each screenshot result's "source:" path. Spot-check a frame from each video before linking it.
-- Copy `templates/report.html` to the videos folder and fill it in as a **walkthrough**. Give each test section (matching its video) this order:
+- Copy `templates/report.html` to `%USERPROFILE%\Videos\qa-<site>\report.html` (next to the `videos\` folder) and fill it in as a **walkthrough**. Videos are click-to-play (`preload="none"` with a poster). If the report goes in a git repo or onto a host like Vercel, commit the videos as **normal files, not Git LFS**: hosts serve LFS placeholders, which never play. Give each test section (matching its video) this order:
   1. The question the section answers.
   2. A Mermaid diagram when it helps: sign-in or request flows showing where something fails, relationships (e.g. roles vs limits), pass/fail groupings (e.g. which agents remember context).
   3. Numbered steps, each with a result pill (PASS, FAIL, ISSUE or EVIDENCE) and a one-line note of evidence.
