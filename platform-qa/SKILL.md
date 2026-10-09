@@ -66,6 +66,9 @@ For **every AI agent or model**:
   3. Numbered steps, each with a result pill (PASS, FAIL, ISSUE or EVIDENCE) and a one-line note of evidence.
   4. The section's video, playing inline.
   5. That section's findings.
+  6. A **Suggested fixes** panel: one item per fix, each with an effort chip (QUICK WIN, MEDIUM or LARGER), an owner chip (Frontend, Backend, Infra, AI, Product) and a concrete "how". If the codebase is available locally, name the actual file, endpoint or setting (e.g. "the backend already has `POST /api/user/gitlab-pat`; add the field"). Otherwise describe the change without guessing names.
+- Near the top, fill in the **section tiles** (each coloured by its worst result) and a **Fix plan** (Now · this week / Next · this month / Later), linking each item to its section.
+- Keep the template's design: Apple system fonts (SF Pro, with Inter as fallback) and the neumorphic styles, where raised surfaces hold content and inset panels hold work to do. Don't hard-code colours outside the CSS variables, so light and dark both work. Keep Mermaid notes short enough to fit (span them across all participants with `Note over A,Z`).
 - Agent sections get one sub-heading per agent with its own steps and video. Add a small table where it compares well (e.g. providers: answer, memory, models).
 - Rank findings: **Broken** (feature doesn't work), **High** (wrong or unsafe AI output, privacy), **Medium** (data mismatches, admin risks), **Low** (polish). Finish with the all-findings table (linking back to sections) and the test footprint (what was created, credits used, what was deliberately not touched).
 - Check the report before sending: serve the folder locally (e.g. `python -m http.server`), open it in the browser, and confirm every `<video>` loads (`readyState >= 1`) and every `pre.mermaid` rendered an `<svg>`.

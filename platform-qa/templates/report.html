@@ -7,9 +7,10 @@
 <title>{{PLATFORM}} QA</title>
 <!--
   Walkthrough template for the platform-qa skill.
-  Structure: header + stats + overview diagram + contents, then ONE <h2> SECTION PER VIDEO
+  Design: Apple system fonts (SF Pro; Inter fallback) and a neumorphic UI (raised = content, inset = to-do).
+  Structure: header + stats + section tiles + contents + Fix plan, then ONE <h2> SECTION PER VIDEO
   SECTION, each in this order: goal → optional Mermaid diagram → numbered steps with a
-  result pill → the video (inline <video>) → that section's findings. End with the ranked
+  result pill → the video (inline <video>) → that section's findings → Suggested fixes. End with the ranked
   findings table and the test footprint.
   Replace every {{PLACEHOLDER}}; copy the example blocks as often as needed; delete unused.
   Step pills: res pass | fail | warn (ISSUE) | info (EVIDENCE).
@@ -19,83 +20,142 @@
   characters, e.g. A["Sign-in & session"]. Use diagrams for flows (sign-in, request →
   failure), relationships (roles vs limits) and result groupings (pass/fail buckets).
 -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* Apple system type: SF Pro on Apple devices; Inter as the closest open fallback elsewhere. */
   :root {
-    --bg: #f7f7fb; --surface: #ffffff; --text: #1b1b24; --muted: #5d5d70; --line: #e3e3ec;
-    --crit: #c62828; --crit-bg: #fdecec; --high: #b45309; --high-bg: #fff4e5;
-    --med: #6d28d9; --med-bg: #f1ebff; --low: #475569; --low-bg: #eef2f6;
-    --pass: #15803d; --pass-bg: #e8f6ec; --accent: #5b4bdb; --fix: #0e7490; --fix-bg: #e0f4f8;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Inter", "Segoe UI", Roboto, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Inter", "Segoe UI", sans-serif;
+    --mono: "SF Mono", ui-monospace, Menlo, "Cascadia Mono", Consolas, monospace;
+    /* Neumorphic palette: one base colour, raised and inset with paired light/dark shadows. */
+    --bg: #e6e9ef; --text: #1d2433; --muted: #5a6478; --hair: rgba(29,36,51,.08);
+    --sh-d: rgba(163,174,194,.75); --sh-l: rgba(255,255,255,.95);
+    --crit: #c62828; --crit-bg: #f6dcdc; --high: #a3520a; --high-bg: #f7e6cf;
+    --med: #6d28d9; --med-bg: #e7defb; --low: #475569; --low-bg: #dde2ea;
+    --pass: #157a3a; --pass-bg: #d6efdd; --accent: #4f46e5; --fix: #0e7490; --fix-bg: #d4ecf1;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #121218; --surface: #1c1c25; --text: #ececf3; --muted: #a1a1b5; --line: #2e2e3b;
-      --crit: #ff8a80; --crit-bg: #3a1c1c; --high: #ffb74d; --high-bg: #3a2a14;
-      --med: #c4b5fd; --med-bg: #2a2140; --low: #b0bec5; --low-bg: #232a31;
-      --pass: #81c784; --pass-bg: #1b2e20; --accent: #a29bfe; --fix: #67e8f9; --fix-bg: #133038;
+      --bg: #22252d; --text: #e9ebf1; --muted: #a2a9b8; --hair: rgba(255,255,255,.06);
+      --sh-d: rgba(0,0,0,.55); --sh-l: rgba(255,255,255,.045);
+      --crit: #ff8a80; --crit-bg: #3a2427; --high: #ffb74d; --high-bg: #3a2f22;
+      --med: #c4b5fd; --med-bg: #2f2a40; --low: #b6c2cf; --low-bg: #2b3038;
+      --pass: #86d39b; --pass-bg: #233528; --accent: #a5b4fc; --fix: #67e8f9; --fix-bg: #1f363c;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #121218; --surface: #1c1c25; --text: #ececf3; --muted: #a1a1b5; --line: #2e2e3b;
-    --crit: #ff8a80; --crit-bg: #3a1c1c; --high: #ffb74d; --high-bg: #3a2a14;
-    --med: #c4b5fd; --med-bg: #2a2140; --low: #b0bec5; --low-bg: #232a31;
-    --pass: #81c784; --pass-bg: #1b2e20; --accent: #a29bfe; --fix: #67e8f9; --fix-bg: #133038;
+    --bg: #22252d; --text: #e9ebf1; --muted: #a2a9b8; --hair: rgba(255,255,255,.06);
+    --sh-d: rgba(0,0,0,.55); --sh-l: rgba(255,255,255,.045);
+    --crit: #ff8a80; --crit-bg: #3a2427; --high: #ffb74d; --high-bg: #3a2f22;
+    --med: #c4b5fd; --med-bg: #2f2a40; --low: #b6c2cf; --low-bg: #2b3038;
+    --pass: #86d39b; --pass-bg: #233528; --accent: #a5b4fc; --fix: #67e8f9; --fix-bg: #1f363c;
+  }
+  :root {
+    --raise: 9px 9px 18px var(--sh-d), -9px -9px 18px var(--sh-l);
+    --raise-sm: 4px 4px 9px var(--sh-d), -4px -4px 9px var(--sh-l);
+    --inset: inset 5px 5px 10px var(--sh-d), inset -5px -5px 10px var(--sh-l);
+    --inset-sm: inset 2px 2px 5px var(--sh-d), inset -2px -2px 5px var(--sh-l);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 1000px; margin: 0 auto; padding: 32px 16px 80px; }
-  h1 { font-size: 27px; margin: 0 0 4px; }
-  h2 { font-size: 21px; margin: 48px 0 6px; padding-top: 8px; }
-  h2 .num { color: var(--accent); margin-right: 8px; }
-  h3 { font-size: 16px; margin: 22px 0 8px; }
-  h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 18px 0 6px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 var(--font);
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.003em; }
+  main { max-width: 1000px; margin: 0 auto; padding: 40px 16px 96px; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1 { font-size: 32px; font-weight: 700; margin: 0 0 6px; }
+  h2 { font-size: 23px; font-weight: 700; margin: 56px 0 8px; padding-top: 8px; }
+  h2 .num { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 12px;
+    box-shadow: var(--raise-sm); color: var(--accent); font-size: 16px; margin-right: 12px; vertical-align: 3px; }
+  h3 { font-size: 17px; font-weight: 600; margin: 26px 0 10px; }
+  h4 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 22px 0 8px; }
   p { margin: 6px 0; }
   .sub, .goal { color: var(--muted); }
-  .goal { margin: 0 0 10px; }
-  a { color: var(--accent); }
-  code { font-size: 13px; background: var(--low-bg); padding: 1px 5px; border-radius: 4px; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0; }
-  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-  .stat b { display: block; font-size: 24px; }
+  .goal { margin: 0 0 14px; font-size: 15.5px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--mono); font-size: 12.5px; padding: 2px 7px; border-radius: 7px; box-shadow: var(--inset-sm); }
+  /* Raised surfaces */
+  .stat, .card, .diagram, .f, figure.vid, .wrap, .fixes, .plan { background: var(--bg); border-radius: 20px; box-shadow: var(--raise); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 26px 0; }
+  .stat { padding: 16px 18px; }
+  .stat b { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
   .stat span { color: var(--muted); font-size: 13px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin: 12px 0; }
-  nav.toc ol { margin: 6px 0 0; padding-left: 22px; columns: 2; column-gap: 28px; }
-  nav.toc li { margin: 3px 0; break-inside: avoid; }
+  .card { padding: 18px 22px; margin: 22px 0; }
+  nav.toc ol { margin: 8px 0 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+  nav.toc li { margin: 4px 0; break-inside: avoid; }
   @media (max-width: 640px) { nav.toc ol { columns: 1; } }
-  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 6px 0; }
-  ol.steps li { counter-increment: step; display: grid; grid-template-columns: 26px 1fr auto; gap: 10px;
-    align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  /* Steps */
+  ol.steps { list-style: none; counter-reset: step; padding: 6px 4px; margin: 8px 0; }
+  ol.steps li { counter-increment: step; display: grid; grid-template-columns: 30px 1fr auto; gap: 12px;
+    align-items: start; padding: 10px 0; border-bottom: 1px solid var(--hair); }
   ol.steps li:last-child { border-bottom: 0; }
-  ol.steps li::before { content: counter(step); width: 22px; height: 22px; border-radius: 50%; background: var(--low-bg);
-    color: var(--muted); font-size: 12px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
-  .res { font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
-  .res.pass { color: var(--pass); background: var(--pass-bg); }
-  .res.fail { color: var(--crit); background: var(--crit-bg); }
-  .res.warn { color: var(--high); background: var(--high-bg); }
-  .res.info { color: var(--low); background: var(--low-bg); }
-  .step-note { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
-  figure.vid { margin: 14px 0 6px; }
-  figure.vid video { width: 100%; max-height: 560px; background: #000; border-radius: 10px; display: block; }
-  figure.vid figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
-  .vids { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
-  .diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 12px 0; overflow-x: auto; }
-  .diagram pre.mermaid { margin: 0; background: transparent; text-align: center; }
-  .f { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
-  .f b.t { display: block; margin-bottom: 2px; }
+  ol.steps li::before { content: counter(step); width: 26px; height: 26px; border-radius: 50%; box-shadow: var(--inset-sm);
+    color: var(--muted); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .res, .tag { font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 3px 10px; border-radius: 999px; white-space: nowrap; box-shadow: var(--raise-sm); }
+  .tag { display: inline-block; margin-right: 8px; vertical-align: 1px; }
+  .res.pass, .tag.pass { color: var(--pass); } .res.fail, .tag.crit { color: var(--crit); }
+  .res.warn, .tag.high { color: var(--high); } .res.info, .tag.low { color: var(--low); }
+  .tag.med { color: var(--med); } .tag.fix { color: var(--fix); }
+  .step-note { display: block; color: var(--muted); font-size: 13.5px; margin-top: 3px; }
+  /* Video */
+  figure.vid { margin: 22px 0 10px; padding: 12px; }
+  figure.vid video { width: 100%; max-height: 560px; background: #0d0f14; border-radius: 14px; display: block; box-shadow: var(--inset-sm); }
+  figure.vid figcaption { color: var(--muted); font-size: 13px; margin: 10px 4px 2px; }
+  .vids { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+  .vids figure.vid { margin: 22px 0 10px; }
+  /* Diagrams */
+  .diagram { padding: 18px; margin: 22px 0; overflow-x: auto; }
+  .diagram pre.mermaid { margin: 0; background: transparent; text-align: center; font-family: var(--font); }
+  /* Findings */
+  .f { position: relative; padding: 12px 16px 12px 22px; margin: 14px 0; border-radius: 16px; box-shadow: var(--raise-sm); }
+  .f::before { content: ""; position: absolute; left: 8px; top: 12px; bottom: 12px; width: 4px; border-radius: 4px; background: var(--low); }
+  .f.crit::before { background: var(--crit); } .f.high::before { background: var(--high); }
+  .f.med::before { background: var(--med); } .f.fix::before { background: var(--fix); }
+  .f b.t { display: block; font-weight: 600; margin-bottom: 2px; }
   .f p { color: var(--muted); margin: 2px 0 0; }
-  .f.crit { border-left-color: var(--crit); } .f.high { border-left-color: var(--high); }
-  .f.med { border-left-color: var(--med); } .f.low { border-left-color: var(--low); } .f.fix { border-left-color: var(--fix); }
-  .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 1px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; }
-  .tag.crit { color: var(--crit); background: var(--crit-bg); } .tag.high { color: var(--high); background: var(--high-bg); }
-  .tag.med { color: var(--med); background: var(--med-bg); } .tag.low { color: var(--low); background: var(--low-bg); }
-  .tag.pass { color: var(--pass); background: var(--pass-bg); } .tag.fix { color: var(--fix); background: var(--fix-bg); }
-  .wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 14px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .03em; }
+  /* Suggested fixes panel (inset = "work to do") */
+  .fixes { padding: 18px 20px 14px; margin: 22px 0 8px; box-shadow: var(--inset); }
+  .fixes h5 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--fix); }
+  .fixes h5 svg { width: 18px; height: 18px; }
+  .fixes ul { list-style: none; margin: 0; padding: 0; }
+  .fixes li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--hair); }
+  .fixes li:last-child { border-bottom: 0; }
+  .fixes li b { font-weight: 600; }
+  .fixes li span.how { grid-column: 1 / -1; color: var(--muted); font-size: 13.5px; }
+  .fixes .meta { display: flex; gap: 6px; align-items: start; flex-wrap: wrap; justify-content: flex-end; }
+  .chip { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; box-shadow: var(--raise-sm); color: var(--muted); white-space: nowrap; }
+  .chip.quick { color: var(--pass); } .chip.mid { color: var(--high); } .chip.big { color: var(--crit); }
+  /* Fix plan */
+  .plan { padding: 20px 22px; margin: 26px 0; }
+  .plan h3 { margin: 0 0 4px; }
+  .plan .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 14px; }
+  .plan .col { border-radius: 16px; box-shadow: var(--inset); padding: 14px 16px; }
+  .plan .col h6 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .plan .col.now h6 { color: var(--crit); } .plan .col.next h6 { color: var(--high); } .plan .col.later h6 { color: var(--low); }
+  .plan ol { margin: 0; padding-left: 18px; font-size: 14px; }
+  .plan li { margin: 5px 0; }
+  /* Section tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin: 8px 0 26px; }
+  .tile { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center;
+    padding: 14px 16px; border-radius: 18px; background: var(--bg); box-shadow: var(--raise); color: var(--text); text-decoration: none;
+    transition: box-shadow .18s ease, transform .18s ease; }
+  .tile:hover { text-decoration: none; box-shadow: var(--inset); }
+  .tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .tile .n { grid-row: 1 / 3; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; box-shadow: var(--inset-sm); }
+  .tile b { font-weight: 600; font-size: 14.5px; }
+  .tile .st { font-size: 12.5px; color: var(--muted); }
+  .tile.pass .n { color: var(--pass); } .tile.warn .n { color: var(--high); } .tile.fail .n { color: var(--crit); }
+  .tile.pass .st::before, .tile.warn .st::before, .tile.fail .st::before { content: "●  "; font-size: 10px; vertical-align: 1px; }
+  .tile.pass .st::before { color: var(--pass); } .tile.warn .st::before { color: var(--high); } .tile.fail .st::before { color: var(--crit); }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } }
+  /* Tables */
+  .wrap { overflow-x: auto; padding: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
   tr:last-child td { border-bottom: 0; }
-  hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0 0; }
+  hr { border: 0; height: 2px; border-radius: 2px; box-shadow: var(--inset-sm); margin: 56px 0 0; }
 </style>
 </head>
 <body>
@@ -112,17 +172,12 @@
   <div class="stat"><b>{{X}} / {{Y}}</b><span>{{headline ratio, e.g. agents that remember context}}</span></div>
 </div>
 
-<!-- Overview: one node per section, coloured by its worst result -->
-<div class="diagram">
-<pre class="mermaid">
-flowchart LR
-  A["1 · {{Section}}"]:::pass --> B["2 · {{Section}}"]:::warn --> C["3 · {{Section}}"]:::fail
-  classDef pass fill:#e8f6ec,stroke:#15803d,color:#14532d
-  classDef warn fill:#fff4e5,stroke:#b45309,color:#78350f
-  classDef fail fill:#fdecec,stroke:#c62828,color:#7f1d1d
-</pre>
+<!-- Section tiles: one per section; class pass | warn | fail = its worst result -->
+<div class="tiles" aria-label="Sections at a glance">
+  <a class="tile pass" href="#s1"><span class="n">1</span><b>{{Section}}</b><span class="st">Works</span></a>
+  <a class="tile warn" href="#s2"><span class="n">2</span><b>{{Section}}</b><span class="st">Works, with issues</span></a>
+  <a class="tile fail" href="#s3"><span class="n">3</span><b>{{Section}}</b><span class="st">Broken</span></a>
 </div>
-<p class="sub">Green: everything worked. Amber: works, with issues. Red: at least one broken feature.</p>
 
 <nav class="toc card">
   <b>Walkthrough</b>
@@ -132,6 +187,23 @@ flowchart LR
     <li><a href="#footprint">Test footprint</a></li>
   </ol>
 </nav>
+
+<!-- Fix plan: every item links to the section whose Suggested fixes panel explains it -->
+<div class="plan">
+  <h3>Fix plan</h3>
+  <p class="sub">Every fix is explained in the "Suggested fixes" panel at the end of its section.</p>
+  <div class="cols">
+    <div class="col now"><h6>Now · this week</h6><ol>
+      <li>{{Most urgent fix}} (<a href="#s1">1</a>)</li>
+    </ol></div>
+    <div class="col next"><h6>Next · this month</h6><ol>
+      <li>{{Fix}} (<a href="#s2">2</a>)</li>
+    </ol></div>
+    <div class="col later"><h6>Later</h6><ol>
+      <li>{{Fix}} (<a href="#s3">3</a>)</li>
+    </ol></div>
+  </div>
+</div>
 
 <!-- ====================== SECTION (copy per section) ====================== -->
 <h2 id="s1"><span class="num">1</span>{{Section name}}</h2>
@@ -161,6 +233,11 @@ sequenceDiagram
 <div class="f crit"><b class="t"><span class="tag crit">BROKEN</span>{{One-line finding}}</b><p>{{One sentence of evidence or impact}}</p></div>
 <div class="f low"><b class="t"><span class="tag low">LOW</span>{{One-line finding}}</b></div>
 
+<!-- Suggested fixes: one item per fix. Effort chip: quick (QUICK WIN) | mid (MEDIUM) | big (LARGER); second chip = owner. -->
+<div class="fixes"><h5><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Suggested fixes</h5><ul>
+  <li><b>{{Fix title}}</b><span class="meta"><span class="chip quick">QUICK WIN</span><span class="chip">{{Frontend / Backend / Infra / AI / Product}}</span></span><span class="how">{{Concrete how: file, endpoint, setting or config, if known}}</span></li>
+  <li><b>{{Fix title}}</b><span class="meta"><span class="chip mid">MEDIUM</span><span class="chip">{{Owner}}</span></span><span class="how">{{How}}</span></li>
+</ul></div>
 <!-- For agent sections: one <h3> per agent with its own steps + video, e.g.
 <h3>6.1 {{Agent}}</h3>
 <ol class="steps">
@@ -186,7 +263,20 @@ sequenceDiagram
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
   const dark = document.documentElement.dataset.theme === 'dark' ||
     (document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
-  mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default', securityLevel: 'strict' });
+  // Soft palette matching the neumorphic surfaces; readable text in both themes.
+  const pal = dark
+    ? { box: '#2c3039', border: '#454b59', text: '#e9ebf1', line: '#a2a9b8', note: '#3a2f22', noteText: '#ffd9a8', noteBorder: '#6b5233' }
+    : { box: '#f3f5f9', border: '#c3cad8', text: '#1d2433', line: '#5a6478', note: '#fbefdc', noteText: '#5a3a0a', noteBorder: '#e0b47a' };
+  mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'strict',
+    themeVariables: {
+      fontFamily: getComputedStyle(document.documentElement).getPropertyValue('--font').trim(), fontSize: '14px',
+      background: 'transparent', primaryColor: pal.box, primaryBorderColor: pal.border, primaryTextColor: pal.text,
+      secondaryColor: pal.box, tertiaryColor: pal.box, lineColor: pal.line, textColor: pal.text,
+      actorBkg: pal.box, actorBorder: pal.border, actorTextColor: pal.text, actorLineColor: pal.border,
+      signalColor: pal.line, signalTextColor: pal.text, labelBoxBkgColor: pal.box, labelTextColor: pal.text,
+      noteBkgColor: pal.note, noteTextColor: pal.noteText, noteBorderColor: pal.noteBorder,
+      edgeLabelBackground: pal.box, clusterBkg: pal.box, clusterBorder: pal.border
+    } });
 </script>
 </body>
 </html>
