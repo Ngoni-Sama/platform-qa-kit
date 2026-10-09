@@ -15,11 +15,15 @@ Get Claude to test your web platform end to end: every page, every AI agent, rec
   If it prints "Unknown filter", your FFmpeg is too old. Download the latest "full" build from https://www.gyan.dev/ffmpeg/builds/ and unzip it to `C:\Tools\ffmpeg`.
 
 ## Install (one time)
-Copy the `platform-qa` folder into your Claude skills folder:
+In PowerShell:
 ```
-%USERPROFILE%\.claude\skills\platform-qa\
+git clone https://github.com/Ngoni-Sama/platform-qa-kit.git "$env:TEMP\platform-qa-kit"
+Copy-Item "$env:TEMP\platform-qa-kit\platform-qa" "$env:USERPROFILE\.claude\skills\platform-qa" -Recurse
 ```
-You should end up with `%USERPROFILE%\.claude\skills\platform-qa\SKILL.md`.
+Or download the repo as a ZIP from GitHub and copy its `platform-qa` folder into `%USERPROFILE%\.claude\skills\`.
+You should end up with `%USERPROFILE%\.claude\skills\platform-qa\SKILL.md`. Restart the Claude app (or start a new session) so it picks up the skill.
+
+To update later, run `git -C "$env:TEMP\platform-qa-kit" pull` and copy the folder again.
 
 ## Run a test
 1. In the Claude desktop app's Code tab, start a new session and type:
