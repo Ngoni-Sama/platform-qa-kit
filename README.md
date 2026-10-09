@@ -36,7 +36,7 @@ To update later, run `git -C "$env:TEMP\platform-qa-kit" pull` and copy the fold
 ## What you get
 `Videos\qa-<site>\` contains:
 - one MP4 per section (dashboard, account pages, each agent, and so on), showing the browser step by step, about 3 seconds per step
-- `report.html`: findings ranked Broken / High / Medium / Low, an agent results table, what passed, links to every video, and exactly what the test created
+- `report.html`: a walkthrough. For each section it shows the steps with pass/fail, the video playing inline, the findings and, where useful, a diagram (sign-in flow, where a request fails, which agents remember context). It ends with all findings ranked Broken / High / Medium / Low and exactly what the test created.
 
 ## Good to know
 - Sign-ins in Claude's browser are separate from your Chrome or Edge.

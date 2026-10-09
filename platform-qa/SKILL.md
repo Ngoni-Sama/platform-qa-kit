@@ -60,8 +60,15 @@ For **every AI agent or model**:
 
 ### 4. Report
 - Build the videos: `scripts/make-videos.ps1 -ShotsDir <dir> -Folder qa-<site>`. The screenshot directory is the folder in each screenshot result's "source:" path. Spot-check a frame from each video before linking it.
-- Copy `templates/report.html` to the videos folder and fill it in. Rank findings: **Broken** (feature doesn't work), **High** (wrong or unsafe AI output, privacy), **Medium** (data mismatches, admin risks), **Low** (polish). Each finding gets one sentence of evidence and a video number.
-- Add an agent results table (first answer, time, memory, notes, video), a "what passed" list, links to the recordings, and the test footprint (what was created, credits used, what was deliberately not touched).
+- Copy `templates/report.html` to the videos folder and fill it in as a **walkthrough**. Give each test section (matching its video) this order:
+  1. The question the section answers.
+  2. A Mermaid diagram when it helps: sign-in or request flows showing where something fails, relationships (e.g. roles vs limits), pass/fail groupings (e.g. which agents remember context).
+  3. Numbered steps, each with a result pill (PASS, FAIL, ISSUE or EVIDENCE) and a one-line note of evidence.
+  4. The section's video, playing inline.
+  5. That section's findings.
+- Agent sections get one sub-heading per agent with its own steps and video. Add a small table where it compares well (e.g. providers: answer, memory, models).
+- Rank findings: **Broken** (feature doesn't work), **High** (wrong or unsafe AI output, privacy), **Medium** (data mismatches, admin risks), **Low** (polish). Finish with the all-findings table (linking back to sections) and the test footprint (what was created, credits used, what was deliberately not touched).
+- Check the report before sending: serve the folder locally (e.g. `python -m http.server`), open it in the browser, and confirm every `<video>` loads (`readyState >= 1`) and every `pre.mermaid` rendered an `<svg>`.
 - Send the report with `SendUserFile`. If any recording shows personal data, warn the user before they share it.
 
 ## Navigation tips

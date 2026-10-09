@@ -3,12 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{PLATFORM}} QA Report</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>{{PLATFORM}} QA</title>
 <!--
-  Template for the platform-qa skill. Replace every {{PLACEHOLDER}}, duplicate the
-  example blocks as needed, and delete the ones you don't use. Video links are
-  relative: keep this file in the same folder as the recordings.
-  Severity classes: crit (broken) / high / med / low / fix (corrected) / pass.
+  Walkthrough template for the platform-qa skill.
+  Structure: header + stats + overview diagram + contents, then ONE <h2> SECTION PER VIDEO
+  SECTION, each in this order: goal → optional Mermaid diagram → numbered steps with a
+  result pill → the video (inline <video>) → that section's findings. End with the ranked
+  findings table and the test footprint.
+  Replace every {{PLACEHOLDER}}; copy the example blocks as often as needed; delete unused.
+  Step pills: res pass | fail | warn (ISSUE) | info (EVIDENCE).
+  Finding classes: crit (BROKEN) | high | med | low | fix (CORRECTED).
+  Video paths are relative: keep this file next to the videos (or adjust "videos/").
+  Mermaid: put diagram source inside <pre class="mermaid">; quote labels with special
+  characters, e.g. A["Sign-in & session"]. Use diagrams for flows (sign-in, request →
+  failure), relationships (roles vs limits) and result groupings (pass/fail buckets).
 -->
 <style>
   :root {
@@ -32,87 +41,152 @@
     --pass: #81c784; --pass-bg: #1b2e20; --accent: #a29bfe; --fix: #67e8f9; --fix-bg: #133038;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--text);
     font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
-  h1 { font-size: 26px; margin: 0 0 4px; }
-  h2 { font-size: 19px; margin: 36px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
-  .sub { color: var(--muted); margin: 0 0 20px; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 27px; margin: 0 0 4px; }
+  h2 { font-size: 21px; margin: 48px 0 6px; padding-top: 8px; }
+  h2 .num { color: var(--accent); margin-right: 8px; }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 18px 0 6px; }
+  p { margin: 6px 0; }
+  .sub, .goal { color: var(--muted); }
+  .goal { margin: 0 0 10px; }
+  a { color: var(--accent); }
+  code { font-size: 13px; background: var(--low-bg); padding: 1px 5px; border-radius: 4px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0; }
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
   .stat b { display: block; font-size: 24px; }
   .stat span { color: var(--muted); font-size: 13px; }
-  .f { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px;
-    border-radius: 8px; padding: 12px 14px; margin: 10px 0; }
-  .f h3 { margin: 0 0 4px; font-size: 15.5px; }
-  .f p { margin: 4px 0 0; color: var(--muted); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin: 12px 0; }
+  nav.toc ol { margin: 6px 0 0; padding-left: 22px; columns: 2; column-gap: 28px; }
+  nav.toc li { margin: 3px 0; break-inside: avoid; }
+  @media (max-width: 640px) { nav.toc ol { columns: 1; } }
+  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 6px 0; }
+  ol.steps li { counter-increment: step; display: grid; grid-template-columns: 26px 1fr auto; gap: 10px;
+    align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+  ol.steps li:last-child { border-bottom: 0; }
+  ol.steps li::before { content: counter(step); width: 22px; height: 22px; border-radius: 50%; background: var(--low-bg);
+    color: var(--muted); font-size: 12px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
+  .res { font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .res.pass { color: var(--pass); background: var(--pass-bg); }
+  .res.fail { color: var(--crit); background: var(--crit-bg); }
+  .res.warn { color: var(--high); background: var(--high-bg); }
+  .res.info { color: var(--low); background: var(--low-bg); }
+  .step-note { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  figure.vid { margin: 14px 0 6px; }
+  figure.vid video { width: 100%; max-height: 560px; background: #000; border-radius: 10px; display: block; }
+  figure.vid figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .vids { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 12px 0; overflow-x: auto; }
+  .diagram pre.mermaid { margin: 0; background: transparent; text-align: center; }
+  .f { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+  .f b.t { display: block; margin-bottom: 2px; }
+  .f p { color: var(--muted); margin: 2px 0 0; }
   .f.crit { border-left-color: var(--crit); } .f.high { border-left-color: var(--high); }
-  .f.med { border-left-color: var(--med); } .f.low { border-left-color: var(--low); }
-  .f.fix { border-left-color: var(--fix); }
-  .tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .03em;
-    padding: 1px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; }
-  .tag.crit { color: var(--crit); background: var(--crit-bg); }
-  .tag.high { color: var(--high); background: var(--high-bg); }
-  .tag.med { color: var(--med); background: var(--med-bg); }
-  .tag.low { color: var(--low); background: var(--low-bg); }
-  .tag.pass { color: var(--pass); background: var(--pass-bg); }
-  .tag.fix { color: var(--fix); background: var(--fix-bg); }
+  .f.med { border-left-color: var(--med); } .f.low { border-left-color: var(--low); } .f.fix { border-left-color: var(--fix); }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 1px 7px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; }
+  .tag.crit { color: var(--crit); background: var(--crit-bg); } .tag.high { color: var(--high); background: var(--high-bg); }
+  .tag.med { color: var(--med); background: var(--med-bg); } .tag.low { color: var(--low); background: var(--low-bg); }
+  .tag.pass { color: var(--pass); background: var(--pass-bg); } .tag.fix { color: var(--fix); background: var(--fix-bg); }
   .wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; background: var(--surface);
-    border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 14px; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .03em; }
   tr:last-child td { border-bottom: 0; }
-  a { color: var(--accent); }
-  code { font-size: 13px; background: var(--low-bg); padding: 1px 5px; border-radius: 4px; }
-  ul.plain { padding-left: 20px; margin: 6px 0; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0 0; }
 </style>
 </head>
 <body>
 <main>
-  <h1>{{PLATFORM}} — QA run</h1>
-  <p class="sub">{{URL}} · {{DATE}}, {{START}}–{{END}} · account {{ACCOUNT}} · read-only, plus one test prompt and one follow-up per agent (all prefixed <code>[QA TEST]</code>)</p>
 
-  <div class="stats">
-    <div class="stat"><b>{{N}}</b><span>broken / blocking</span></div>
-    <div class="stat"><b>{{N}}</b><span>AI answer-quality issues</span></div>
-    <div class="stat"><b>{{N}}</b><span>data mismatches</span></div>
-    <div class="stat"><b>{{N}}</b><span>UX, performance, polish</span></div>
-    <div class="stat"><b>{{X}} / {{Y}}</b><span>pages, agents and models working</span></div>
-  </div>
+<h1>{{PLATFORM}} — QA walkthrough</h1>
+<p class="sub">{{URL}} · {{DATE}}, {{START}}–{{END}} · account {{ACCOUNT}} · read-only, plus test prompts marked <code>[QA TEST]</code>. Videos show only the browser, built from screenshots of the browser tab at about 3 s per step.</p>
 
-  <h2>Broken or blocking</h2>
-  <div class="f crit"><h3><span class="tag crit">BROKEN</span>{{One-line statement of what doesn't work}}</h3>
-    <p>{{Evidence: what you did, what happened, API status codes, since when. Video NN.}}</p></div>
+<div class="stats">
+  <div class="stat"><b>{{N}}</b><span>broken / blocking</span></div>
+  <div class="stat"><b>{{N}}</b><span>AI answer-quality issues</span></div>
+  <div class="stat"><b>{{N}}</b><span>data mismatches</span></div>
+  <div class="stat"><b>{{N}}</b><span>UX, performance, polish</span></div>
+  <div class="stat"><b>{{X}} / {{Y}}</b><span>{{headline ratio, e.g. agents that remember context}}</span></div>
+</div>
 
-  <h2>AI answer quality</h2>
-  <div class="f high"><h3><span class="tag high">HIGH</span>{{e.g. Agent X does not remember earlier messages}}</h3>
-    <p>{{Prompt, expected answer, actual answer, sources. Video NN.}}</p></div>
+<!-- Overview: one node per section, coloured by its worst result -->
+<div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  A["1 · {{Section}}"]:::pass --> B["2 · {{Section}}"]:::warn --> C["3 · {{Section}}"]:::fail
+  classDef pass fill:#e8f6ec,stroke:#15803d,color:#14532d
+  classDef warn fill:#fff4e5,stroke:#b45309,color:#78350f
+  classDef fail fill:#fdecec,stroke:#c62828,color:#7f1d1d
+</pre>
+</div>
+<p class="sub">Green: everything worked. Amber: works, with issues. Red: at least one broken feature.</p>
 
-  <h2>Data mismatches</h2>
-  <div class="f med"><h3><span class="tag med">MEDIUM</span>{{e.g. Plan shown as A on page 1, B on page 2}}</h3></div>
+<nav class="toc card">
+  <b>Walkthrough</b>
+  <ol>
+    <li><a href="#s1">{{Section}}</a></li>
+    <li><a href="#all">All findings, ranked</a></li>
+    <li><a href="#footprint">Test footprint</a></li>
+  </ol>
+</nav>
 
-  <h2>UX, performance and polish</h2>
-  <div class="f low"><h3><span class="tag low">LOW</span>{{e.g. Duplicate API calls: /api/x called 6× per load}}</h3></div>
+<!-- ====================== SECTION (copy per section) ====================== -->
+<h2 id="s1"><span class="num">1</span>{{Section name}}</h2>
+<p class="goal">{{The question this section answers, e.g. "Can users ask questions about their documents?"}}</p>
 
-  <h2>Agent and model results</h2>
-  <div class="wrap"><table>
-    <tr><th>Agent / model</th><th>First answer</th><th>Time</th><th>Memory</th><th>Notes</th><th>Video</th></tr>
-    <tr><td>{{Agent}}</td><td><span class="tag pass">PASS</span></td><td>~{{s}} s</td><td><span class="tag crit">FAIL</span></td><td>{{note}}</td><td><a href="{{file}}.mp4">{{NN}}</a></td></tr>
-  </table></div>
+<!-- Optional diagram: request flow showing where it fails -->
+<div class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+  participant B as Browser
+  participant A as {{API host}}
+  B->>A: {{request}}
+  A-->>B: {{status and timing}}
+  Note over B,A: {{what went wrong, since when}}
+</pre>
+</div>
 
-  <h2>What passed</h2>
-  <ul class="plain">
-    <li>{{Pages and flows that loaded with all API calls returning 200}}</li>
-  </ul>
+<ol class="steps">
+  <li><span>{{What was done}}</span><span class="res pass">PASS</span></li>
+  <li><span>{{What was done}}<span class="step-note">{{Evidence: what happened, numbers, API status}}</span></span><span class="res fail">FAIL</span></li>
+  <li><span>{{What was done}}<span class="step-note">{{Detail}}</span></span><span class="res warn">ISSUE</span></li>
+</ol>
 
-  <h2>Recordings</h2>
-  <ul class="plain">
-    <li><a href="{{file}}.mp4">{{NN}} {{Section name}}</a></li>
-  </ul>
+<figure class="vid"><video controls preload="metadata" playsinline src="videos/{{NN-section}}.mp4"></video><figcaption>Video {{NN}} — {{what it shows}}</figcaption></figure>
 
-  <h2>Test footprint</h2>
-  <p>{{What the run created (conversations, messages), credits used, and what was deliberately not touched: invites, uploads, settings, payments, deletes.}}</p>
+<h4>Findings</h4>
+<div class="f crit"><b class="t"><span class="tag crit">BROKEN</span>{{One-line finding}}</b><p>{{One sentence of evidence or impact}}</p></div>
+<div class="f low"><b class="t"><span class="tag low">LOW</span>{{One-line finding}}</b></div>
+
+<!-- For agent sections: one <h3> per agent with its own steps + video, e.g.
+<h3>6.1 {{Agent}}</h3>
+<ol class="steps">
+  <li><span>First prompt …<span class="step-note">~20 s; answer; sources</span></span><span class="res pass">PASS</span></li>
+  <li><span>Follow-up memory test …<span class="step-note">what it said</span></span><span class="res fail">FAIL</span></li>
+</ol>
+<figure class="vid"><video controls preload="metadata" playsinline src="videos/NN-agent.mp4"></video><figcaption>Video NN — …</figcaption></figure>
+-->
+
+<hr>
+<h2 id="all">All findings, ranked</h2>
+<div class="wrap"><table>
+  <tr><th>Severity</th><th>Finding</th><th>Section</th></tr>
+  <tr><td><span class="tag crit">BROKEN</span></td><td>{{Finding}}</td><td><a href="#s1">1</a></td></tr>
+</table></div>
+
+<h2 id="footprint">Test footprint</h2>
+<p>{{What the run created (conversations, messages), credits used, and what was deliberately not touched: invites, uploads, settings, payments, deletes.}}</p>
+<p class="sub">{{Which videos show personal data, if any. Keep internal.}}</p>
+
 </main>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  const dark = document.documentElement.dataset.theme === 'dark' ||
+    (document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default', securityLevel: 'strict' });
+</script>
 </body>
 </html>
