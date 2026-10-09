@@ -31,6 +31,7 @@
 
 ## Video files and hosting
 - **Encode for the web:** faststart (`-movflags +faststart`), a keyframe every second, H.264 yuv420p — `make_videos.py` does this. Without it, players stall and seeking freezes.
+- **"The report has no CSS / no videos"** usually means it was opened as a lone file (chat attachment, side-panel preview, email) without `videos/` beside it. Hand over `report-standalone.html` from `make_videos.py embed` instead; it carries its videos inside.
 - **Click-to-play:** `preload="none"` + a poster, so 20+ videos don't all download at once.
 - **No Git LFS for report videos.** Vercel and similar hosts serve the 130-byte LFS pointer instead of the file unless LFS is switched on in their settings; clones need `git lfs install`. Screenshot videos are small — commit them as normal files.
 - **Mixed jpg/png frames** break ffmpeg's concat demuxer; `make_videos.py` normalises every frame first.

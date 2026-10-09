@@ -23,9 +23,16 @@ Output (report.html sits in <qa-folder> and links these):
   <qa-folder>/videos/NN-<id>.mp4          web-ready: faststart, keyframe every 1 s
   <qa-folder>/videos/posters/NN-<id>.jpg  poster for click-to-play
 
+After the report is written, make a single-file copy to hand to people:
+       python make_videos.py embed --out <qa-folder>
+  -> <qa-folder>/report-standalone.html with every video and poster inlined, so
+     it opens correctly on its own (email, chat attachment, file preview) without
+     the videos/ folder next to it.
+
 Needs ffmpeg: on PATH, in C:/Tools/ffmpeg, or via `pip install imageio-ffmpeg`.
 """
 import argparse
+import base64
 import datetime as dt
 import glob
 import json
@@ -166,6 +173,37 @@ def build(args):
     print(f"{len(results)} video(s); index written to videos.json")
 
 
+MEDIA_TYPES = {".mp4": "video/mp4", ".gif": "image/gif", ".jpg": "image/jpeg",
+               ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+
+
+def embed(args):
+    """Inline every local video/poster/image the report references, so the
+    report works as one file (no videos/ folder needed next to it)."""
+    qa_dir = os.path.abspath(args.out)
+    src = os.path.join(qa_dir, args.report)
+    with open(src, encoding="utf-8") as fh:
+        html = fh.read()
+    count = 0
+
+    def inline(m):
+        nonlocal count
+        attr, path = m.group(1), m.group(2)
+        full = os.path.join(qa_dir, path.replace("/", os.sep))
+        mime = MEDIA_TYPES.get(os.path.splitext(path)[1].lower())
+        if not mime or not os.path.isfile(full):
+            return m.group(0)  # leaves template examples in comments alone
+        with open(full, "rb") as fh:
+            count += 1
+            return f'{attr}="data:{mime};base64,{base64.b64encode(fh.read()).decode()}"'
+
+    html = re.sub(r'\b(src|poster)="(?!data:|https?:|//)([^"]+)"', inline, html)
+    out = os.path.join(qa_dir, args.name)
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    print(f"WROTE {args.name}: {count} file(s) inlined, {os.path.getsize(out) / 1e6:.1f} MB")
+
+
 def mark(args):
     qa_dir = os.path.abspath(args.out)
     os.makedirs(qa_dir, exist_ok=True)
@@ -183,6 +221,11 @@ def main():
     b.add_argument("--shots-dir", help="folder of screenshots, grouped by sections.csv time markers")
     b.add_argument("--seconds", type=float, default=3.0, help="seconds each screenshot is shown")
     b.set_defaults(func=build)
+    e = sub.add_parser("embed", help="write a single-file copy of the report with videos inlined")
+    e.add_argument("--out", required=True, help="QA output folder holding report.html and videos/")
+    e.add_argument("--report", default="report.html")
+    e.add_argument("--name", default="report-standalone.html")
+    e.set_defaults(func=embed)
     m = sub.add_parser("mark", help="mark the start of a section now")
     m.add_argument("--out", required=True)
     m.add_argument("name")

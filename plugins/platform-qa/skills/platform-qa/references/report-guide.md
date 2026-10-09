@@ -31,4 +31,4 @@ Serve the folder (`python -m http.server 8765` in the report folder) and open it
 - every `<video>` loads metadata (`readyState >= 1`, `duration > 0`) and every poster loads;
 - every `pre.mermaid` contains an `<svg>` and no note text overflows its box;
 - no horizontal scroll at 375 px; check light and dark (`resize_window colorScheme`).
-Then send the file to the user and stop the server.
+Then run `make_videos.py embed --out <folder>`, open `report-standalone.html` the same way (styles present, every video plays), send **that** file to the user as an attachment, and stop the server. Never hand over `report.html` alone or as an inline preview: without the `videos/` folder next to it the videos break and some previews drop the styling.
